@@ -1,12 +1,14 @@
 const express = require("express");
 const mongoose = require("mongoose");
 require("dotenv").config();
+const authorRoutes = require("./routes/authorRoutes");
 
 const app = express();
 
 // This lets Express read JSON sent in request bodies.
 // We will need it later when we create and update authors and books.
 app.use(express.json());
+app.use("/authors", authorRoutes);
 
 const PORT = process.env.PORT || 3000;
 const MONGO_URI = process.env.MONGO_URI;
