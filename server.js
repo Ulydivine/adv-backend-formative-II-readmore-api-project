@@ -2,6 +2,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 require("dotenv").config();
 const authorRoutes = require("./routes/authorRoutes");
+const bookRoutes = require("./routes/bookRoutes");
 
 const app = express();
 
@@ -9,6 +10,7 @@ const app = express();
 // We will need it later when we create and update authors and books.
 app.use(express.json());
 app.use("/authors", authorRoutes);
+app.use("/books", bookRoutes);
 
 const PORT = process.env.PORT || 3000;
 const MONGO_URI = process.env.MONGO_URI;
