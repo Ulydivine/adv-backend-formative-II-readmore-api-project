@@ -16,6 +16,14 @@ async function createBook(req, res) {
       return res.status(400).json({ message: "Invalid author id" });
     }
 
+    if (isValidObjectId(req.body.author)) {
+      const author = await Author.findById(req.body.author);
+
+      if (!author) {
+        return res.status(400).json({ message: "Author does not exist" });
+      }
+    }
+
     const book = await Book.create({
       title: req.body.title,
       genre: req.body.genre,
