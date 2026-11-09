@@ -55,6 +55,48 @@ async function getAuthor(req, res) {
   }
 }
 
+async function getAuthorStats(req, res) {
+  try {
+    if (!isValidObjectId(req.params.id)) {
+      return res.status(400).json({ message: "Invalid author id" });
+    }
+
+    const author = await Author.findById(req.params.id);
+
+    if (!author) {
+      return res.status(404).json({ message: "Author not found" });
+    }
+
+    const books = await Book.find({ author: req.params.id }).sort({
+      price: 1,
+    });
+
+    const bookCount = books.length;
+
+    const totalPrice = books.reduce((total, book) => {
+      return total + book.price;
+    }, 0);
+
+    const averagePrice =
+      bookCount > 0 ? totalPrice / bookCount : 0;
+
+    const cheapestBook = bookCount > 0 ? books[0] : null;
+
+    const mostExpensiveBook =
+      bookCount > 0 ? books[bookCount - 1] : null;
+
+    res.json({
+      author: author.name,
+      bookCount,
+      averagePrice,
+      cheapestBook,
+      mostExpensiveBook,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Could not get author statistics" });
+  }
+}
+
 async function updateAuthor(req, res) {
   try {
     if (!isValidObjectId(req.params.id)) {
@@ -126,6 +168,7 @@ module.exports = {
   createAuthor,
   getAuthors,
   getAuthor,
+  getAuthorStats,
   updateAuthor,
   deleteAuthor,
 };
