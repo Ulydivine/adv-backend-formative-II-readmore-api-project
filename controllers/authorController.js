@@ -80,10 +80,10 @@ async function getAuthorStats(req, res) {
     const averagePrice =
       bookCount > 0 ? totalPrice / bookCount : 0;
 
-    const cheapestBook = bookCount > 0 ? books[0] : null;
+    const cheapestBook = bookCount > 0 ? books[0].title  : null;
 
     const mostExpensiveBook =
-      bookCount > 0 ? books[bookCount - 1] : null;
+      bookCount > 0 ? books[bookCount - 1].title  : null;
 
     res.json({
       author: author.name,
