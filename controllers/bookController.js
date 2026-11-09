@@ -72,7 +72,66 @@ if (
 
 async function getBooks(req, res) {
   try {
-    const books = await Book.find().populate("author");
+    const filters = {};
+
+    if (req.query.genre) {
+      filters.genre = req.query.genre;
+    }
+
+    if (req.query.author) {
+      if (!isValidObjectId(req.query.author)) {
+        return res.status(400).json({ message: "Invalid author id" });
+      }
+
+      filters.author = req.query.author;
+    }
+
+    if (req.query.search) {
+      filters.title = {
+        $regex: req.query.search,
+        $options: "i",
+      };
+    }
+
+    if (req.query.minPrice !== undefined || req.query.maxPrice !== undefined) {
+      filters.price = {};
+
+      if (req.query.minPrice !== undefined) {
+        const minPrice = Number(req.query.minPrice);
+
+        if (!Number.isFinite(minPrice)) {
+          return res.status(400).json({ message: "Invalid minimum price" });
+        }
+
+        filters.price.$gte = minPrice;
+      }
+
+      if (req.query.maxPrice !== undefined) {
+        const maxPrice = Number(req.query.maxPrice);
+
+        if (!Number.isFinite(maxPrice)) {
+          return res.status(400).json({ message: "Invalid maximum price" });
+        }
+
+        filters.price.$lte = maxPrice;
+      }
+    }
+
+    const allowedSortFields = ["price", "title", "publishedYear"];
+    const sortOptions = {};
+
+    if (allowedSortFields.includes(req.query.sort)) {
+      sortOptions[req.query.sort] = req.query.order === "desc" ? -1 : 1;
+    }
+
+    let booksQuery = Book.find(filters).populate("author");
+
+    if (Object.keys(sortOptions).length > 0) {
+      booksQuery = booksQuery.sort(sortOptions);
+    }
+
+    const books = await booksQuery;
+
     res.json(books);
   } catch (error) {
     res.status(500).json({ message: "Could not get the books" });
