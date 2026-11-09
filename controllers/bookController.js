@@ -35,6 +35,23 @@ if (existingBook) {
   });
 }
 
+const price = req.body.price;
+const publishedYear = req.body.publishedYear;
+const currentYear = new Date().getFullYear();
+
+if (
+  typeof price !== "number" ||
+  !Number.isFinite(price) ||
+  price <= 0 ||
+  !Number.isInteger(publishedYear) ||
+  publishedYear < 1450 ||
+  publishedYear > currentYear
+) {
+  return res.status(422).json({
+    message: "Price must be greater than 0 and published year must be between 1450 and the current year",
+  });
+}
+
     const book = await Book.create({
       title: req.body.title,
       genre: req.body.genre,
@@ -116,6 +133,29 @@ async function updateBook(req, res) {
 
 if (!currentBook) {
   return res.status(404).json({ message: "Book not found" });
+}
+
+    const price = updates.price !== undefined
+  ? updates.price
+  : currentBook.price;
+
+const publishedYear = updates.publishedYear !== undefined
+  ? updates.publishedYear
+  : currentBook.publishedYear;
+
+const currentYear = new Date().getFullYear();
+
+if (
+  typeof price !== "number" ||
+  !Number.isFinite(price) ||
+  price <= 0 ||
+  !Number.isInteger(publishedYear) ||
+  publishedYear < 1450 ||
+  publishedYear > currentYear
+) {
+  return res.status(422).json({
+    message: "Price must be greater than 0 and published year must be between 1450 and the current year",
+  });
 }
 
 const title = updates.title !== undefined ? updates.title : currentBook.title;
