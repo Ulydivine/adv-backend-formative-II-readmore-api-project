@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const Author = require("../models/Author");
+const Book = require("../models/Book");
 
 function isValidObjectId(id) {
   if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -99,11 +100,21 @@ async function deleteAuthor(req, res) {
       return res.status(400).json({ message: "Invalid author id" });
     }
 
-    const author = await Author.findByIdAndDelete(req.params.id);
+    const author = await Author.findById(req.params.id);
 
     if (!author) {
       return res.status(404).json({ message: "Author not found" });
     }
+
+    const books = await Book.find({ author: req.params.id });
+
+    if (books.length > 0) {
+      return res.status(409).json({
+        message: "Cannot delete an author who still has books",
+      });
+    }
+
+    await Author.findByIdAndDelete(req.params.id);
 
     res.json({ message: "Author deleted" });
   } catch (error) {
