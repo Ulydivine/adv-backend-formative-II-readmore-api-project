@@ -24,6 +24,17 @@ async function createBook(req, res) {
       }
     }
 
+    const existingBook = await Book.findOne({
+  title: req.body.title,
+  author: req.body.author,
+}).collation({ locale: "en", strength: 2 });
+
+if (existingBook) {
+  return res.status(409).json({
+    message: "This author already has a book with this title",
+  });
+}
+
     const book = await Book.create({
       title: req.body.title,
       genre: req.body.genre,
@@ -100,6 +111,27 @@ async function updateBook(req, res) {
     if (req.body.author !== undefined) {
       updates.author = req.body.author;
     }
+
+    const currentBook = await Book.findById(req.params.id);
+
+if (!currentBook) {
+  return res.status(404).json({ message: "Book not found" });
+}
+
+const title = updates.title !== undefined ? updates.title : currentBook.title;
+const author = updates.author !== undefined ? updates.author : currentBook.author;
+
+const existingBook = await Book.findOne({
+  _id: { $ne: req.params.id },
+  title: title,
+  author: author,
+}).collation({ locale: "en", strength: 2 });
+
+if (existingBook) {
+  return res.status(409).json({
+    message: "This author already has a book with this title",
+  });
+}
 
     const book = await Book.findByIdAndUpdate(req.params.id, updates, {
       returnDocument: "after",
